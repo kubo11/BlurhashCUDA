@@ -1,0 +1,6 @@
+#ifndef __BLURHASH_DECODE_GPU_H_
+#define __BLURHASH_DECODE_GPU_H_
+
+
+
+#endif // !__BLURHASH_DECODE_GPU_H_
