@@ -1,6 +1,8 @@
 #ifndef __BLURHASH_CLI_H__
 #define __BLURHASH_CLI_H__
 
+#include <string>
+
 #define S_ENCODE "encode"
 #define S_DECODE "decode"
 #define S_CPU "cpu"
@@ -44,5 +46,6 @@ struct ProgramData {
 };
 
 int parseProgramArgs(int argc, char** argv, struct ProgramData* programdata);
+char* prependFilename(const char* prefix, const char* filename);
 
 #endif // !__BLURHASH_CLI_H__

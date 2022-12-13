@@ -9,18 +9,10 @@
 #include "stb_writer.cuh"
 
 #include "cli.cuh"
+#include "common.cuh"
 #include "cuda_runtime.h"
 #include <stdio.h>
-
-#define CHECK_CUDA(call)                                                         \
-{                                                                                \
-    cudaError_t _e = (call);                                                     \
-    if (_e != cudaSuccess)                                                       \
-    {                                                                            \
-        printf("CUDA Runtime failure '#%d' at %s:%d\n", _e, __FILE__, __LINE__); \
-        exit(EXIT_FAILURE);                                                      \
-    }                                                                            \
-}
+#include <string>
 
 #define CUDA_MEASURE_TIME_START() do {                                           \
 cudaEvent_t start, stop;                                                         \
@@ -33,7 +25,7 @@ CHECK_CUDA(cudaEventRecord(stop))                                               
 CHECK_CUDA(cudaEventSynchronize(stop))                                           \
 float time;                                                                      \
 CHECK_CUDA(cudaEventElapsedTime(&time, start, stop))                             \
-printf("procedure <%s> took: %f ms\n", name, time);                              \
+printf("%s time elapsed:\n%f ms\n", name, time / 1000);                              \
 } while (0);
 
 #if defined(_WIN32)
@@ -202,19 +194,22 @@ int main(int argc, char** argv) {
                 return EXIT_FAILURE;
             }
 
-            if (stbi_write_png(programData.imagePath,
+            char* filename = prependFilename("cpu_", programData.imagePath);
+            if (stbi_write_png(filename,
                 programData.processingData.DecodingData.width,
                 programData.processingData.DecodingData.height,
                 nChannels,
                 bytes,
                 nChannels * programData.processingData.DecodingData.width) == 0) {
-                fprintf(stderr, "Failed to write PNG file %s\n", programData.imagePath);
+                fprintf(stderr, "Failed to write PNG file %s\n", filename);
+                free(filename);
                 return EXIT_FAILURE;
             }
 
             if (bytes) free(bytes);
 
-            fprintf(stdout, "Decoded blurhash on CPU successfully, wrote PNG file %s\n", programData.imagePath);
+            fprintf(stdout, "Decoded blurhash on CPU successfully, wrote PNG file %s\n", filename);
+            free(filename);
 
             CUDA_MEASURE_TIME_START()
             bytes = decodeGPU(programData.processingData.DecodingData.hash,
@@ -229,19 +224,20 @@ int main(int argc, char** argv) {
                 return EXIT_FAILURE;
             }
 
-            if (stbi_write_png(programData.imagePath,
+            filename = prependFilename("gpu_", programData.imagePath);
+            if (stbi_write_png(filename,
                 programData.processingData.DecodingData.width,
                 programData.processingData.DecodingData.height,
                 nChannels,
                 bytes,
                 nChannels * programData.processingData.DecodingData.width) == 0) {
-                fprintf(stderr, "Failed to write PNG file %s\n", programData.imagePath);
+                fprintf(stderr, "Failed to write PNG file %s\n", filename);
                 return EXIT_FAILURE;
             }
 
             if (bytes) free(bytes);
 
-            fprintf(stdout, "Decoded blurhash on GPU successfully, wrote PNG file %s\n", programData.imagePath);
+            fprintf(stdout, "Decoded blurhash on GPU successfully, wrote PNG file %s\n", filename);
         }
     }
 

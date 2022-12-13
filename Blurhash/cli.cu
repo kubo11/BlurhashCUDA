@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <string>
 
 int parseProgramArgs(int argc, char** argv, struct ProgramData *programData) {
 	if (argc < 2) {
@@ -83,4 +84,23 @@ int parseProgramArgs(int argc, char** argv, struct ProgramData *programData) {
 	}
 
 	return EXIT_SUCCESS;
+}
+
+char* prependFilename(const char* prefix, const char* filename) {
+	char* newfilename = (char*)malloc((strlen(filename) + strlen(prefix) + 1) * sizeof(char));
+	if (newfilename == NULL) {
+		printf("Could not allocate space for new filename\n");
+		return NULL;
+	}
+	for (int i = strlen(filename) - 1; i >= 0; --i) {
+		if (filename[i] == '\\') {
+			strncpy(newfilename, filename, i + 1);
+			strncpy(newfilename + i + 1, prefix, strlen(prefix));
+			strncpy(newfilename + i + strlen(prefix) + 1, filename + i + 1, strlen(filename) - i);
+			return newfilename;
+		}
+	}
+	strncpy(newfilename, prefix, strlen(prefix));
+	strncpy(newfilename + strlen(prefix), filename, strlen(filename) + 1);
+	return newfilename;
 }
