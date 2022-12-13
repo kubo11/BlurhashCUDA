@@ -12,7 +12,7 @@ int parseProgramArgs(int argc, char** argv, struct ProgramData *programData) {
 	if (memcmp(argv[1], S_ENCODE, strlen(S_ENCODE)) == 0) {
 		programData->action = ENCODE;
 	}
-	else if (memcmp(argv[1], S_DECODE, strlen(S_DECODE) == 0)) {
+	else if (memcmp(argv[1], S_DECODE, strlen(S_DECODE)) == 0) {
 		programData->action = DECODE;
 	}
 	else {

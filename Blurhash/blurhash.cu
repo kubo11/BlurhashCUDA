@@ -1,5 +1,7 @@
 #include "encodecpu.cuh"
 #include "decodecpu.cuh"
+#include "encodegpu.cuh"
+#include "decodegpu.cuh"
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -22,16 +24,16 @@
 
 #define CUDA_MEASURE_TIME_START() do {                                           \
 cudaEvent_t start, stop;                                                         \
-CUDA_CHECK(cudaEventCreate(&start))                                              \
-CUDA_CHECK(cudaEventCreate(&stop))                                               \
-CUDA_CHECK(cudaEventRecord(start))                                               \
+CHECK_CUDA(cudaEventCreate(&start))                                              \
+CHECK_CUDA(cudaEventCreate(&stop))                                               \
+CHECK_CUDA(cudaEventRecord(start))                                               \
 
 #define CUDA_MEASURE_TIME_END(name)                                              \
-CUDA_CHECK(cudaEventRecord(stop))                                                \
-CUDA_CHECK(cudaEventSynchronize(stop))                                           \
+CHECK_CUDA(cudaEventRecord(stop))                                                \
+CHECK_CUDA(cudaEventSynchronize(stop))                                           \
 float time;                                                                      \
-CUDA_CHECK(cudaEventElapsedTime(&time, start, stop))                             \
-printf("procedure <%s> took: %d ms\n", name, time);                              \
+CHECK_CUDA(cudaEventElapsedTime(&time, start, stop))                             \
+printf("procedure <%s> took: %f ms\n", name, time);                              \
 } while (0);
 
 #if defined(_WIN32)
@@ -96,10 +98,32 @@ int main(int argc, char** argv) {
             printf("CPU blurhash:\n%100s\n", hash);
         }
         else if (programData.processor == GPU) {
-
+            CHECK_CUDA(cudaSetDevice(0));
+            const char* hash;
+            CUDA_MEASURE_TIME_START()
+            hash = encodeGPU(programData.processingData.EncodingData.xComponents,
+                             programData.processingData.EncodingData.yComponents,
+                             width, height, data, width * 3);
+            CUDA_MEASURE_TIME_END("GPU encoding")
+            printf("GPU blurhash:\n%100s\n", hash);
+            CHECK_CUDA(cudaDeviceReset());
         }
         else {
-
+            const char* hash;
+            MEASURE_TIME_START()
+            hash = encodeCPU(programData.processingData.EncodingData.xComponents,
+                             programData.processingData.EncodingData.yComponents,
+                             width, height, data, width * 3);
+            MEASURE_TIME_END("CPU encoding")
+            printf("CPU blurhash:\n%100s\n", hash);
+            CHECK_CUDA(cudaSetDevice(0));
+            CUDA_MEASURE_TIME_START()
+            hash = encodeGPU(programData.processingData.EncodingData.xComponents,
+                             programData.processingData.EncodingData.yComponents,
+                             width, height, data, width * 3);
+            CUDA_MEASURE_TIME_END("GPU encoding")
+            printf("GPU blurhash:\n%100s\n", hash);
+            CHECK_CUDA(cudaDeviceReset());
         }
         stbi_image_free(data);
     }
@@ -130,15 +154,94 @@ int main(int argc, char** argv) {
             	return EXIT_FAILURE;
             }
             
-            freePixelArray(bytes);
+            if (bytes) free(bytes);
             
-            fprintf(stdout, "Decoded blurhash successfully, wrote PNG file %s\n", programData.imagePath);
+            fprintf(stdout, "Decoded blurhash on CPU successfully, wrote PNG file %s\n", programData.imagePath);
         }
         else if (programData.processor == GPU) {
+            uint8_t* bytes;
+            CUDA_MEASURE_TIME_START()
+            bytes = decodeGPU(programData.processingData.DecodingData.hash,
+                programData.processingData.DecodingData.width,
+                programData.processingData.DecodingData.height,
+                programData.processingData.DecodingData.punch,
+                nChannels);
+            CUDA_MEASURE_TIME_END("GPU decoding")
 
+            if (!bytes) {
+                fprintf(stderr, "%s is not a valid blurhash, decoding failed.\n", programData.processingData.DecodingData.hash);
+                return EXIT_FAILURE;
+            }
+
+            if (stbi_write_png(programData.imagePath,
+                programData.processingData.DecodingData.width,
+                programData.processingData.DecodingData.height,
+                nChannels,
+                bytes,
+                nChannels * programData.processingData.DecodingData.width) == 0) {
+                fprintf(stderr, "Failed to write PNG file %s\n", programData.imagePath);
+                return EXIT_FAILURE;
+            }
+
+            if (bytes) free(bytes);
+
+            fprintf(stdout, "Decoded blurhash on GPU successfully, wrote PNG file %s\n", programData.imagePath);
         }
         else {
+            uint8_t* bytes;
+            MEASURE_TIME_START()
+            bytes = decodeCPU(programData.processingData.DecodingData.hash,
+                programData.processingData.DecodingData.width,
+                programData.processingData.DecodingData.height,
+                programData.processingData.DecodingData.punch,
+                nChannels);
+            MEASURE_TIME_END("CPU decoding")
 
+            if (!bytes) {
+                fprintf(stderr, "%s is not a valid blurhash, decoding failed.\n", programData.processingData.DecodingData.hash);
+                return EXIT_FAILURE;
+            }
+
+            if (stbi_write_png(programData.imagePath,
+                programData.processingData.DecodingData.width,
+                programData.processingData.DecodingData.height,
+                nChannels,
+                bytes,
+                nChannels * programData.processingData.DecodingData.width) == 0) {
+                fprintf(stderr, "Failed to write PNG file %s\n", programData.imagePath);
+                return EXIT_FAILURE;
+            }
+
+            if (bytes) free(bytes);
+
+            fprintf(stdout, "Decoded blurhash on CPU successfully, wrote PNG file %s\n", programData.imagePath);
+
+            CUDA_MEASURE_TIME_START()
+            bytes = decodeGPU(programData.processingData.DecodingData.hash,
+                programData.processingData.DecodingData.width,
+                programData.processingData.DecodingData.height,
+                programData.processingData.DecodingData.punch,
+                nChannels);
+            CUDA_MEASURE_TIME_END("GPU decoding")
+
+            if (!bytes) {
+                fprintf(stderr, "%s is not a valid blurhash, decoding failed.\n", programData.processingData.DecodingData.hash);
+                return EXIT_FAILURE;
+            }
+
+            if (stbi_write_png(programData.imagePath,
+                programData.processingData.DecodingData.width,
+                programData.processingData.DecodingData.height,
+                nChannels,
+                bytes,
+                nChannels * programData.processingData.DecodingData.width) == 0) {
+                fprintf(stderr, "Failed to write PNG file %s\n", programData.imagePath);
+                return EXIT_FAILURE;
+            }
+
+            if (bytes) free(bytes);
+
+            fprintf(stdout, "Decoded blurhash on GPU successfully, wrote PNG file %s\n", programData.imagePath);
         }
     }
 

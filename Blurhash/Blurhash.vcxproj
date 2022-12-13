@@ -83,6 +83,7 @@
     <ClInclude Include="decodegpu.cuh" />
     <ClInclude Include="encodegpu.cuh" />
     <ClInclude Include="encodecpu.cuh" />
+    <ClInclude Include="kernels.cuh" />
     <ClInclude Include="stb_image.cuh" />
     <ClInclude Include="stb_writer.cuh" />
   </ItemGroup>
@@ -97,8 +98,10 @@
   <ItemGroup>
     <CudaCompile Include="decodegpu.cu" />
     <CudaCompile Include="encodegpu.cu" />
+    <CudaCompile Include="kernels.cu" />
   </ItemGroup>
   <ItemGroup>
+    <None Include=".gitignore" />
     <None Include="Makefile" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
