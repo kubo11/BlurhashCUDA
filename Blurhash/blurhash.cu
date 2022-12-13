@@ -1,7 +1,5 @@
-#include "encodecpu.cuh"
-#include "decodecpu.cuh"
-#include "encodegpu.cuh"
-#include "decodegpu.cuh"
+#include "encode.cuh"
+#include "decode.cuh"
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -25,7 +23,7 @@ CHECK_CUDA(cudaEventRecord(stop))                                               
 CHECK_CUDA(cudaEventSynchronize(stop))                                           \
 float time;                                                                      \
 CHECK_CUDA(cudaEventElapsedTime(&time, start, stop))                             \
-printf("%s time elapsed:\n%f ms\n", name, time / 1000);                              \
+printf("%s time elapsed:\n%f s\n", name, time / 1000);                           \
 } while (0);
 
 #if defined(_WIN32)
@@ -87,7 +85,7 @@ int main(int argc, char** argv) {
                              programData.processingData.EncodingData.yComponents,
                              width, height, data, width * 3);
             MEASURE_TIME_END("CPU encoding")
-            printf("CPU blurhash:\n%100s\n", hash);
+            printf("CPU blurhash:\n%s\n", hash);
         }
         else if (programData.processor == GPU) {
             CHECK_CUDA(cudaSetDevice(0));
@@ -97,7 +95,7 @@ int main(int argc, char** argv) {
                              programData.processingData.EncodingData.yComponents,
                              width, height, data, width * 3);
             CUDA_MEASURE_TIME_END("GPU encoding")
-            printf("GPU blurhash:\n%100s\n", hash);
+            printf("GPU blurhash:\n%s\n", hash);
             CHECK_CUDA(cudaDeviceReset());
         }
         else {
@@ -107,14 +105,14 @@ int main(int argc, char** argv) {
                              programData.processingData.EncodingData.yComponents,
                              width, height, data, width * 3);
             MEASURE_TIME_END("CPU encoding")
-            printf("CPU blurhash:\n%100s\n", hash);
+            printf("CPU blurhash:\n%s\n", hash);
             CHECK_CUDA(cudaSetDevice(0));
             CUDA_MEASURE_TIME_START()
             hash = encodeGPU(programData.processingData.EncodingData.xComponents,
                              programData.processingData.EncodingData.yComponents,
                              width, height, data, width * 3);
             CUDA_MEASURE_TIME_END("GPU encoding")
-            printf("GPU blurhash:\n%100s\n", hash);
+            printf("GPU blurhash:\n%s\n", hash);
             CHECK_CUDA(cudaDeviceReset());
         }
         stbi_image_free(data);
@@ -238,6 +236,7 @@ int main(int argc, char** argv) {
             if (bytes) free(bytes);
 
             fprintf(stdout, "Decoded blurhash on GPU successfully, wrote PNG file %s\n", filename);
+            free(filename);
         }
     }
 

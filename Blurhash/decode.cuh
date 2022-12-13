@@ -1,5 +1,5 @@
-#ifndef __BLURHASH_DECODE_GPU_H_
-#define __BLURHASH_DECODE_GPU_H_
+#ifndef __BLURHASH_DECODE_CUH__
+#define __BLURHASH_DECODE_CUH__
 
 #include <math.h>
 #include <stdbool.h>
@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+uint8_t* decodeCPU(const char * blurhash, int width, int height, int punch, int nChannels);
 uint8_t* decodeGPU(const char* blurhash, int width, int height, int punch, int nChannels);
 
-#endif // !__BLURHASH_DECODE_GPU_H_
+#endif

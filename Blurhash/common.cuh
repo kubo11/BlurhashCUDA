@@ -1,5 +1,5 @@
-#ifndef __BLURHASH_COMMON_H__
-#define __BLURHASH_COMMON_H__
+#ifndef __BLURHASH_COMMON_CUH__
+#define __BLURHASH_COMMON_CUH__
 
 #include<math.h>
 #include<stdio.h>
@@ -87,13 +87,13 @@ static inline int decodeToInt(const char* string, int start, int end) {
 	return value;
 }
 
-static inline bool inline isValidBlurhash(const char* blurhash) {
+static inline bool isValidBlurhash(const char* blurhash) {
 
 	const int hashLength = strlen(blurhash);
 
 	if (!blurhash || strlen(blurhash) < 6) return false;
 
-	int sizeFlag = decodeToInt(blurhash, 0, 1);	//Get size from first character
+	int sizeFlag = decodeToInt(blurhash, 0, 1);
 	int numY = (int)floorf(sizeFlag / 9) + 1;
 	int numX = (sizeFlag % 9) + 1;
 
@@ -102,9 +102,9 @@ static inline bool inline isValidBlurhash(const char* blurhash) {
 }
 
 static inline void decodeDC(int value, float* r, float* g, float* b) {
-	*r = sRGBToLinear(value >> 16); 	// R-component
-	*g = sRGBToLinear((value >> 8) & 255); // G-Component
-	*b = sRGBToLinear(value & 255);	// B-Component
+	*r = sRGBToLinear(value >> 16);
+	*g = sRGBToLinear((value >> 8) & 255);
+	*b = sRGBToLinear(value & 255);
 }
 
 static inline void decodeAC(int value, float maximumValue, float* r, float* g, float* b) {
@@ -115,6 +115,13 @@ static inline void decodeAC(int value, float maximumValue, float* r, float* g, f
 	*r = signPow(((float)quantR - 9) / 9, 2.0) * maximumValue;
 	*g = signPow(((float)quantG - 9) / 9, 2.0) * maximumValue;
 	*b = signPow(((float)quantB - 9) / 9, 2.0) * maximumValue;
+}
+
+static inline void getThreadLayout(int* blocks, int* threads) {
+	if (*threads >= 1024) {
+		*blocks = (*threads - 1) / 1024 + 1;
+		*threads = 1024;
+	}
 }
 
 #endif

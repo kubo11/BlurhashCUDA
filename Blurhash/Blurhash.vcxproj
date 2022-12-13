@@ -79,10 +79,8 @@
   <ItemGroup>
     <ClInclude Include="cli.cuh" />
     <ClInclude Include="common.cuh" />
-    <ClInclude Include="decodecpu.cuh" />
-    <ClInclude Include="decodegpu.cuh" />
-    <ClInclude Include="encodegpu.cuh" />
-    <ClInclude Include="encodecpu.cuh" />
+    <ClInclude Include="decode.cuh" />
+    <ClInclude Include="encode.cuh" />
     <ClInclude Include="kernels.cuh" />
     <ClInclude Include="stb_image.cuh" />
     <ClInclude Include="stb_writer.cuh" />
@@ -90,14 +88,10 @@
   <ItemGroup>
     <ClCompile Include="blurhash.cu" />
     <ClCompile Include="cli.cu" />
-    <ClCompile Include="decodecpu.cu" />
-    <ClCompile Include="decode_stb.cu" />
-    <ClCompile Include="encodecpu.cu" />
-    <ClCompile Include="encode_stb.cu" />
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="decodegpu.cu" />
-    <CudaCompile Include="encodegpu.cu" />
+    <CudaCompile Include="decode.cu" />
+    <CudaCompile Include="encode.cu" />
     <CudaCompile Include="kernels.cu" />
   </ItemGroup>
   <ItemGroup>

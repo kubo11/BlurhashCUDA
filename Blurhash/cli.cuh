@@ -1,14 +1,12 @@
-#ifndef __BLURHASH_CLI_H__
-#define __BLURHASH_CLI_H__
-
-#include <string>
+#ifndef __BLURHASH_CLI_CUH__
+#define __BLURHASH_CLI_CUH__
 
 #define S_ENCODE "encode"
 #define S_DECODE "decode"
 #define S_CPU "cpu"
 #define S_GPU "gpu"
 #define S_BOTH "both"
-#define S_USAGE "usage:\tblurhash encode {CPU|GPU|BOTH} xComponents yComponents imageFile\n\tblurhash decode {CPU|GPU|BOTH} hash width height imageFile [punch]"
+#define S_USAGE "usage:\tblurhash encode {cpu|gpu|both} xComponents yComponents imageFile\n\tblurhash decode {cpu|gpu|both} hash width height imageFile [punch]"
 
 enum Action {
 	ENCODE,
@@ -48,4 +46,4 @@ struct ProgramData {
 int parseProgramArgs(int argc, char** argv, struct ProgramData* programdata);
 char* prependFilename(const char* prefix, const char* filename);
 
-#endif // !__BLURHASH_CLI_H__
+#endif

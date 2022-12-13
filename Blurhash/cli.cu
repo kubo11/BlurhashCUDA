@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <string>
 
 int parseProgramArgs(int argc, char** argv, struct ProgramData *programData) {
 	if (argc < 2) {
