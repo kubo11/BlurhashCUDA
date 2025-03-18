@@ -1,0 +1,31 @@
+SET(BLURHASH_SOURCES 
+    cli.cu
+    decode.cu
+    encode.cu
+    kernels.cu
+)
+
+add_library(${BLURHASH_LIBRARY_NAME} STATIC ${BLURHASH_SOURCES})
+set_target_properties(${BLURHASH_LIBRARY_NAME} PROPERTIES CUDA_RESOLVE_DEVICE_SYMBOLS ON CUDA_SEPARABLE_COMPILATION ON)
+target_compile_definitions(${BLURHASH_LIBRARY_NAME} PUBLIC ${NGP_DEFINITIONS})
+target_compile_options(${BLURHASH_LIBRARY_NAME} PUBLIC $<$<COMPILE_LANGUAGE:CUDA>:${CUDA_NVCC_FLAGS}>)
+target_link_libraries(${BLURHASH_LIBRARY_NAME} PUBLIC stb)
+
+target_include_directories(${BLURHASH_LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+if(BLURHASH_BUILD_STANDALONE)
+    add_executable(${BLURHASH_STANDALONE_NAME} blurhash.cu)
+    target_link_libraries(${BLURHASH_STANDALONE_NAME} PRIVATE ${BLURHASH_LIBRARY_NAME})
+
+    if(MSVC)
+        set(BIN_NAME ${BLURHASH_STANDALONE_NAME}.exe)
+        set(BIN_PATH ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE})
+    else()
+        set(BIN_NAME ${BLURHASH_STANDALONE_NAME})
+        set(BIN_PATH ${CMAKE_CURRENT_BINARY_DIR})
+    endif()
+
+    add_custom_command(TARGET ${BLURHASH_STANDALONE_NAME}
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${BIN_PATH}/${BIN_NAME} ${BUILD_ROOT}/.)
+endif()

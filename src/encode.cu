@@ -110,6 +110,7 @@ const char* encodeGPU(int xComponents, int yComponents, int width, int height, u
 	getThreadLayout(&blocks, &threads);
 
 	computeCosines<<<blocks, threads>>>(yComponents, height, dev_yCosines);
+	computeCosines<<<1, 1>>>(yComponents, height, dev_yCosines);
 	CHECK_CUDA(cudaDeviceSynchronize());
 
 	threads = xComponents * yComponents * width * height;

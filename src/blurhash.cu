@@ -3,8 +3,8 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image.cuh"
-#include "stb_writer.cuh"
+#include "stb_image.h"
+#include "stb_writer.h"
 
 #include "cli.cuh"
 #include "common.cuh"
@@ -49,11 +49,12 @@ printf("%s time elapsed:\n%f s\n", name, interval);                             
 #define MEASURE_TIME_START() do {                                                \
 struct timeval start, end;                                                       \
 double interval;                                                                 \
-gettimeofday(NULL, &start);                                                      \
+gettimeofday(&start, NULL);                                                      \
 
 #define MEASURE_TIME_END(name)                                                   \
-gettimeofday(NULL, &end);                                                        \
-interval = (double)(end.tv_usec - start.tv_usec) / 1000000.0;                    \
+gettimeofday(&end, NULL);                                                        \
+interval = (double)(end.tv_sec - start.tv_sec);                                  \
+interval += (double)(end.tv_usec - start.tv_usec) * 1.0e-6;                      \
 printf("%s time elapsed:\n%f s\n", name, interval);                              \
 } while(0);
 
